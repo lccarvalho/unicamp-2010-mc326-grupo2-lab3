@@ -70,21 +70,20 @@ int ValidaTamMem(char* arg, int tamreg);
 /* Verifica se arg representa um inteiro != 0 e retorna seu valor dividido
    por tam. Retorna -1 em caso de erro. */
 
-FILE** CriaCorrida(FILE* arq, int max, int tam, int key, Header* h, int* j);
+int NumRegs(FILE* arq, int tamreg);
+/*  Retorna o numero total de registros de tamanho 'tamreg' em 'arq' */
+
+FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int numcampos, int* n, int totalregs, int* nread, int* nwrite);
 /* Retorna um vetor de arquivos (corrida) cada um deles com max registros de arq,
-   de tamanho tam, ordenados por key. Coloca em j o número de arquivos da 
+   de tamanho tam, ordenados por key. Coloca em n o número de arquivos da 
    corrida */
 
-void OrdenaRegistros(Record* rec, int i, int key);
+void ImprimeRegFixo(Record rec, FILE* arq, int numcampos);
+/* Grava, na posição corrente em arq, os dados de rec.                        */
+
+void OrdenaRegistros(Record** rec, int i, int key);
 /* Ordena um vetor de registros com i elementos, usando o campo indicado por
    key como chave de ordenação                                                */
-
-void LeRegistroFixo(Record* rec, FILE arq);
-/* Carrega em rec os dados da posição atual em arq. Deixa arq na posição
-   correta para a próxima leitura                                             */
-
-void ImprimeRegFixo(Record* rec, FILE arq);
-/* Grava, na posição corrente em arq, os dados de rec.                        */
 
 FILE* SortMerge(FILE** ppFile, int inf, int sup, int max, Header h, int key);
 /* Invoca CriaOrdNulo() para inicializar um vetor de estruturas de ordenação 

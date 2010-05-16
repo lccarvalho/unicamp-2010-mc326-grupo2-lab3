@@ -42,6 +42,45 @@ Boolean VerificaDigitos(char *string) {
 } /* VerificaDigitos */
 
 
+Record LeRegistroFixo(char* linha, int n, Header* h) {
+/* Transforma 'linha' em um registro do tipo (Record) com n campos. */
+   
+   int i;
+   Record registro;
+   
+   registro = malloc(sizeof(char*)*n);
+   
+   for(i=0;i<n;i++){
+                    
+      if(i==0 || i==3 || i==4 || i==5){    //campos que tem um ' ' no final
+      
+          registro[i] = (char*)malloc(sizeof(char)*(h[i].tamanho+2));
+          strncpy(registro[i], &linha[h[i].inicio-1], h[i].tamanho+1);
+          registro[i][h[i].tamanho + 1] = '\0';
+      }
+      else {
+           
+          registro[i] = (char*)malloc(sizeof(char)*(h[i].tamanho+1));
+          strncpy(registro[i], &linha[h[i].inicio-1], h[i].tamanho);
+          registro[i][h[i].tamanho] = '\0';
+      }
+   }
+   
+   return registro;
+   
+}/* LeRegistroFixo */
+
+
+void LiberaRegistro(Record registro, int n){
+/* Libera todas as strings apontadas por record e também os apontadores */
+     
+     int i;
+     for(i = 0; i < n; i++)
+        free(registro[i]);
+     free(registro);
+     
+} /* LiberaRegistro */
+
 
 /******************************************************************************/
 
@@ -135,12 +174,116 @@ int ValidaTamMem(char* arg, int tamreg){
 } /* ValidaTamMem */
 
 
-FILE** CriaCorrida(FILE* arq, int max, int tam, int key, Header* h, int* j){
+int NumRegs(FILE* arq, int tamreg){
+/*  Retorna o numero total de registros de tamanho 'tamreg' em 'arq' */
+    
+    int n;
+    
+    fseek(arq, 0, SEEK_END);
+    
+    n = (ftell(arq)/tamreg);
+    
+    rewind(arq); 
+    
+    return n;
+    
+} /* NumRegs */
+    
+
+FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int numcampos, int* n, int totalregs, int* nread, int* nwrite){
 /* Retorna um vetor de arquivos (corrida) cada um deles com max registros de arq,
-   de tamanho tam, ordenados por key. Coloca em j o número de arquivos da 
+   de tamanho tam, ordenados por key. Coloca em n o número de arquivos da 
    corrida */
    
+   char *linha;
+   char nome[10];
+   int i, j, regsArq = 0;
+   Record *reg;
+   FILE** ppFile;
    
-   return NULL;
+   linha = malloc(sizeof(char)*tamreg);
+   
+   reg = malloc(sizeof(Record*)*maxreg);
+   
+   *n = totalregs / maxreg;             //numero de corridas
+   
+   if(totalregs % maxreg != 0)
+       *n += 1;
+       
+   ppFile = malloc(sizeof(FILE*)*(*n));
+   
+   
+   for(j = 0; j < *n && !feof(arq); j++) {      //for para a criação das corridas
+   
+        for(i = 0; i < maxreg && !feof(arq); i++){      //for para criar o vetor de registros de cada corrida
+            
+            fread(linha, tamreg, 1, arq);
+            *nread += 1;
+            
+            linha[tamreg-1] = '\0';
+            
+            reg[i] = LeRegistroFixo(linha, numcampos, h);
+            
+            regsArq++;
+            
+        }
+        
+        //OrdenaRegistros(&reg, regsArq, key);           //LUCAS
+        
+        itoa(j, nome, 10);
+        
+        strcat(nome, ".tmp");     //nome para o arquivo temporario
+        
+        ppFile[j] = Fopen(nome, "w+");       //cria arquivo temporario
+        
+        for(i = 0; i < regsArq; i++) {      //imprime no arquivo e desaloca o registro
+            
+            ImprimeRegFixo(reg[i], ppFile[j], numcampos);
+            *nwrite += 1;
+            
+            LiberaRegistro(reg[i], numcampos);
+        }
+
+        regsArq = 0;
+        
+   }
+   
+   free(linha);
+   free(reg);
+   
+   for(j = 0; j < *n; j++)
+       rewind(ppFile[j]);
+
+   return ppFile;
+   
+} /* CriaCorrida */
+
+
+void ImprimeRegFixo(Record rec, FILE* arq, int numcampos){
+/* Grava, na posição corrente em arq, os dados de rec.                        */
+
+   int i;
+   
+   for(i = 0; i < numcampos; i++)
+         fprintf(arq, "%s", rec[i]);
+         
+   fprintf(arq, "\n");
+
+} /* ImprimeRegFixo */
+
+
+void OrdenaRegistros(Record** rec, int i, int key){
+/* Ordena um vetor de registros com i elementos, usando o campo indicado por
+   key como chave de ordenação */
+     
+     
 }
+
+
+FILE* SortMerge(FILE** ppFile, int inf, int sup, int max, Header h, int key){
+      
+      
+}
+
+
 

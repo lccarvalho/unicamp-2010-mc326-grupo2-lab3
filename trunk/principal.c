@@ -33,8 +33,8 @@ int main(int argc, char* argv[]) {
     FILE* arqCfg;                                //arquivo que contem o header do banco de dados
     FILE** ppFile;                               //vetor de arquivos temporários
     Header* head;
-    int numcorridas, numcampos, maxmem, maxreg, tamreg, key;
-    
+    int j, numcampos, maxmem, maxreg, tamreg, key;
+    int numcorridas, totalregs, nread = 0, nwrite = 0;
 
     if(argc != QTE_ARGUMENTOS) {
        printf("Erro argumentos\n");      //TEMPORARIO
@@ -71,19 +71,28 @@ int main(int argc, char* argv[]) {
        exit (0);
     }
     
+    totalregs = NumRegs(arqIn, tamreg);
+    
     /* vetor de arquivos temporários, já classificados */
-    ppFile = CriaCorrida(arqIn, maxreg, tamreg, key, head, &numcorridas);
+    ppFile = CriaCorrida(arqIn, maxreg, tamreg, key, head, numcampos, &numcorridas, totalregs, &nread, &nwrite);
     
     fclose(arqIn);
     
     /* arquivo final, classificado */
-    //arqOut = SortMerge(ppFile, 0, numcorridas, maxreg, head, key);
+    //arqOut = SortMerge(ppFile, 0, numcorridas, maxreg, head, key);     //LUIZ
     
     //fclose(arqOut);
     
+    for(j = 0; j < numcorridas; j++)
+       fclose(ppFile[j]);
+       
+    free(ppFile);    
     free(head);
     
-    //system("pause");
+    printf("Arquivos temporarios criados: %d\n", numcorridas);
+    printf("Registros processados: %d\n", totalregs);
+    printf("Leitura efetuadas: %d\n", nread);
+    printf("Escritas efetuadas: %d\n", nwrite);
     
     return 0;
     
