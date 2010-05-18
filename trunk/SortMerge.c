@@ -359,7 +359,7 @@ void OrdenaRegistros(Record** rec, int i, int key, Header* h, int n){
 
         quick(0, i-1, rec, key, h, &registro);  
         
-        //leberar registro
+       // LiberaRegistro(registro, n);
      
 }
 
