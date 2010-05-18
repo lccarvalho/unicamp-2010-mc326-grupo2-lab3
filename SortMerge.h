@@ -78,7 +78,7 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
    de tamanho tam, ordenados por key. Coloca em n o número de arquivos da 
    corrida */
 
-void ImprimeRegFixo(Record rec, FILE* arq, int numcampos);
+void ImprimeRegFixo(Record rec, FILE* arq, int numcampos, int tamreg);
 /* Grava, na posição corrente em arq, os dados de rec.                        */
 
 void OrdenaRegistros(Record** rec, int i, int key);

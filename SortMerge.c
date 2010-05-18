@@ -241,7 +241,7 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
         
         for(i = 0; i < regsArq; i++) {      //imprime no arquivo e desaloca o registro
             
-            ImprimeRegFixo(reg[i], ppFile[j], numcampos);
+            ImprimeRegFixo(reg[i], ppFile[j], numcampos, tamreg);
             *nwrite += 1;
             
             LiberaRegistro(reg[i], numcampos);
@@ -262,15 +262,25 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
 } /* CriaCorrida */
 
 
-void ImprimeRegFixo(Record rec, FILE* arq, int numcampos){
+void ImprimeRegFixo(Record rec, FILE* arq, int numcampos, int tamreg){
 /* Grava, na posição corrente em arq, os dados de rec.                        */
 
    int i;
+   char *linha = Malloc(sizeof(char)*(tamreg+1));
+   
+   linha[0] = '\0';
+   
+   /* junta todos os campos do registros em um unico bloco de memoria
+      para dar apenas um fwrite */
    
    for(i = 0; i < numcampos; i++)
-         fprintf(arq, "%s", rec[i]);
-         
-   fprintf(arq, "\n");
+         strcat(linha, rec[i]);
+   
+   strcat(linha, "\n");
+   
+   fwrite(linha, tamreg, 1, arq);
+   
+   free(linha);
 
 } /* ImprimeRegFixo */
 
