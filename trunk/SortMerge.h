@@ -16,6 +16,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "envelope.h"
+#include <ctype.h>
+
 
 #define tamPrimCampoHd 20
 #define tamUltCampoHd 40
@@ -81,7 +83,11 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
 void ImprimeRegFixo(Record rec, FILE* arq, int numcampos, int tamreg);
 /* Grava, na posição corrente em arq, os dados de rec.                        */
 
-void OrdenaRegistros(Record** rec, int i, int key);
+void quick(int inicio, int fim, Record** rec, int key, Header* h, Record* registro);
+int particiona(int inicio, int fim, Record** rec, int key, Header* h, Record* registro);
+/* Auxiliares da ordenacao  
+
+void OrdenaRegistros(Record** rec, int i, int key, Header* h, int n);
 /* Ordena um vetor de registros com i elementos, usando o campo indicado por
    key como chave de ordenação                                                */
 

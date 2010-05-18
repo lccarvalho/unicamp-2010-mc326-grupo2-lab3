@@ -231,7 +231,7 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
             
         }
         
-        //OrdenaRegistros(&reg, regsArq, key);           //LUCAS
+        OrdenaRegistros(&reg, regsArq, key, h, numcampos); 
         
         itoa(j, nome, 10);
         
@@ -284,11 +284,78 @@ void ImprimeRegFixo(Record rec, FILE* arq, int numcampos, int tamreg){
 
 } /* ImprimeRegFixo */
 
+void quick(int inicio, int fim, Record** rec, int key, Header* h, Record* registro) {
 
-void OrdenaRegistros(Record** rec, int i, int key){
+     int meio;
+     
+     if (inicio<fim) {
+        meio = particiona(inicio, fim, rec, key, h, registro);
+        quick(inicio, meio-1, rec, key, h, registro);
+        quick(meio+1, fim, rec, key, h, registro);
+     }
+}
+
+int particiona(int inicio, int fim, Record** rec, int key, Header* h, Record* registro) {
+
+    int pivo,ultbaixo,temp,i;
+    int j;
+    int a,b;
+
+    pivo = inicio;
+
+    ultbaixo = inicio;
+    
+
+    for(i=inicio+1; i<=fim; i++) {
+            
+
+         j=0;
+                             
+         while((int)(toupper(rec[0][i][key][j]))==(int)(toupper(rec[0][pivo][key][j])))
+            j++;     
+            
+
+         if ((int)(toupper(rec[0][i][key][j]))<=(int)(toupper(rec[0][pivo][key][j]))) {
+            ultbaixo++;
+            *registro = rec[0][i];
+            rec[0][i] = rec[0][ultbaixo];
+            rec[0][ultbaixo] = *registro;
+         }
+    }
+    
+    
+    *registro = rec[0][inicio];
+    
+    rec[0][inicio] = rec[0][ultbaixo];
+    
+    rec[0][ultbaixo]= *registro;
+ 
+    return(ultbaixo);
+}
+
+void OrdenaRegistros(Record** rec, int i, int key, Header* h, int n){
 /* Ordena um vetor de registros com i elementos, usando o campo indicado por
    key como chave de ordenação */
-     
+   
+    Record registro;
+    int j;
+   
+    registro = malloc(sizeof(char*)*n);
+  
+   for(j=0;j<n;j++){
+                    
+      if(j==0 || j==3 || j==4 || j==5){    //campos que tem um ' ' no final     
+          registro[j] = (char*)malloc(sizeof(char)*(h[j].tamanho+2));
+      }
+      else {           
+          registro[j] = (char*)malloc(sizeof(char)*(h[j].tamanho+1));
+      }
+   }  
+   
+
+        quick(0, i-1, rec, key, h, &registro);  
+        
+        //leberar registro
      
 }
 
