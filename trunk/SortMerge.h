@@ -85,7 +85,7 @@ void ImprimeRegFixo(Record rec, FILE* arq, int numcampos, int tamreg);
 
 void quick(int inicio, int fim, Record** rec, int key, Header* h, Record* registro);
 int particiona(int inicio, int fim, Record** rec, int key, Header* h, Record* registro);
-/* Auxiliares da ordenacao  
+/* Auxiliares da ordenacao                                                  */
 
 void OrdenaRegistros(Record** rec, int i, int key, Header* h, int n);
 /* Ordena um vetor de registros com i elementos, usando o campo indicado por
