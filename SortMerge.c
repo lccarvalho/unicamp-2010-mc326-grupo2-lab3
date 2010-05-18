@@ -146,6 +146,9 @@ int LeChaveOrdena(char* nomecampo, Header* head, int numcampos){
 
    int i;
    
+   if(strcmp(nomecampo, "RA") && strcmp(nomecampo, "NOME"))
+       return -1;
+   
    for(i = 0; i < numcampos; i++)
        if(!strcmp(nomecampo, head[i].nome))
            return i;
