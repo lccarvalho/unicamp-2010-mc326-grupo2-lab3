@@ -342,6 +342,8 @@ void OrdenaRegistros(Record** rec, int i, int key, Header* h, int n){
     Record registro;
     int j;
    
+   if(i>1){
+   
    //criando um registro temporario
    
     registro = malloc(sizeof(char*)*n);
@@ -360,7 +362,7 @@ void OrdenaRegistros(Record** rec, int i, int key, Header* h, int n){
         quick(0, i-1, rec, key, h, &registro);  
         
        // LiberaRegistro(registro, n);
-     
+   } 
 }
 
 
