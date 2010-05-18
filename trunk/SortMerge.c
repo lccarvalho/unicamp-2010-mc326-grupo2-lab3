@@ -285,6 +285,7 @@ void ImprimeRegFixo(Record rec, FILE* arq, int numcampos, int tamreg){
 } /* ImprimeRegFixo */
 
 void quick(int inicio, int fim, Record** rec, int key, Header* h, Record* registro) {
+     /* Ordena os registros pelo metodo quicksort */
 
      int meio;
      
@@ -296,6 +297,7 @@ void quick(int inicio, int fim, Record** rec, int key, Header* h, Record* regist
 }
 
 int particiona(int inicio, int fim, Record** rec, int key, Header* h, Record* registro) {
+     /* Função auxiliar do quicksort */
 
     int pivo,ultbaixo,temp,i;
     int j;
@@ -339,6 +341,8 @@ void OrdenaRegistros(Record** rec, int i, int key, Header* h, int n){
    
     Record registro;
     int j;
+   
+   //criando um registro temporario
    
     registro = malloc(sizeof(char*)*n);
   
