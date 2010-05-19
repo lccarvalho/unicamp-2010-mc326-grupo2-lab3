@@ -87,7 +87,7 @@ void quick(int inicio, int fim, Record** rec, int key, Header* h, Record* regist
 int particiona(int inicio, int fim, Record** rec, int key, Header* h, Record* registro);
 /* Auxiliares da ordenacao                                                  */
 
-void OrdenaRegistros(Record** rec, int i, int key, Header* h, int n);
+void OrdenaRegistros(Record** rec, int i, int key, Header* h, int n, Record* registro );
 /* Ordena um vetor de registros com i elementos, usando o campo indicado por
    key como chave de ordenação                                                */
 
