@@ -231,7 +231,32 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
             
         }
         
-        OrdenaRegistros(&reg, regsArq, key, h, numcampos); 
+        
+     Record registro;
+     int k;
+   
+   
+     //criando um registro temporario para a ordenação
+   
+    registro = malloc(sizeof(char*)*numcampos);
+  
+   for(k=0;k<numcampos;k++){
+                    
+      if(k==0 || k==3 || k==4 || k==5){    //campos que tem um ' ' no final     
+          registro[k] = (char*)malloc(sizeof(char)*(h[k].tamanho+2));
+      }
+      else {           
+          registro[k] = (char*)malloc(sizeof(char)*(h[k].tamanho+1));
+      }
+   }  
+   
+     if(regsArq>1){  //se tiver mais de um registro no arquivo, chama a funcao de ordenacao
+        
+        OrdenaRegistros(&reg, regsArq, key, h, numcampos, &registro); 
+        
+     } 
+     
+     //LiberaRegistro(registro, numcampos); //libera o registro temporario   
         
         itoa(j, nome, 10);
         
@@ -335,34 +360,13 @@ int particiona(int inicio, int fim, Record** rec, int key, Header* h, Record* re
     return(ultbaixo);
 }
 
-void OrdenaRegistros(Record** rec, int i, int key, Header* h, int n){
+void OrdenaRegistros(Record** rec, int i, int key, Header* h, int n, Record* registro ){
 /* Ordena um vetor de registros com i elementos, usando o campo indicado por
    key como chave de ordenação */
    
-    Record registro;
-    int j;
-   
-   if(i>1){
-   
-   //criando um registro temporario
-   
-    registro = malloc(sizeof(char*)*n);
-  
-   for(j=0;j<n;j++){
-                    
-      if(j==0 || j==3 || j==4 || j==5){    //campos que tem um ' ' no final     
-          registro[j] = (char*)malloc(sizeof(char)*(h[j].tamanho+2));
-      }
-      else {           
-          registro[j] = (char*)malloc(sizeof(char)*(h[j].tamanho+1));
-      }
-   }  
-   
 
-        quick(0, i-1, rec, key, h, &registro);  
+        quick(0, i-1, rec, key, h, registro);  
         
-       // LiberaRegistro(registro, n);
-   } 
 }
 
 
