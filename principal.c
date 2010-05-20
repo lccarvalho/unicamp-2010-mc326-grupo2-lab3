@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
        system("pause");
        exit (0);
     }
-    
+   
     /* arquivos de entrada e de configuração */
     AbreArquivoFixo(argv[1], &arqIn, &arqCfg);
   
@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
 
     /* número máximo de registros que cabem na memória */
     maxreg = ValidaTamMem(argv[4], tamreg);
-    
+   
     if(maxreg == -1) {
        printf("Erro memoria\n");         //TEMPORARIO
        system("pause");
@@ -72,10 +72,10 @@ int main(int argc, char* argv[]) {
     }
     
     totalregs = NumRegs(arqIn, tamreg);
-    
+     
     /* vetor de arquivos temporários, já classificados */
-    ppFile = CriaCorrida(arqIn, maxreg, tamreg, key, head, numcampos, &numcorridas, totalregs, &nread, &nwrite);
-    
+   ppFile = CriaCorrida(arqIn, maxreg, tamreg, key, head, numcampos, &numcorridas, totalregs, &nread, &nwrite);
+  
     fclose(arqIn);
     
     /* arquivo final, classificado */

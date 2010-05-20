@@ -27,6 +27,8 @@ void TiraBrancosDoFinal(char* s){
 } /* TiraBrancosDoFinal */
 
 
+
+
 Boolean VerificaDigitos(char *string) {
 /* Retorna "true" se a string só contém digitos de 0-9
    ou retorna "false" caso contrário */
@@ -40,6 +42,8 @@ Boolean VerificaDigitos(char *string) {
     return true;
 
 } /* VerificaDigitos */
+
+
 
 
 Record LeRegistroFixo(char* linha, int n, Header* h) {
@@ -71,6 +75,8 @@ Record LeRegistroFixo(char* linha, int n, Header* h) {
 }/* LeRegistroFixo */
 
 
+
+
 void LiberaRegistro(Record registro, int n){
 /* Libera todas as strings apontadas por record e também os apontadores */
      
@@ -82,7 +88,171 @@ void LiberaRegistro(Record registro, int n){
 } /* LiberaRegistro */
 
 
-/******************************************************************************/
+
+
+void ImprimeRegFixo(Record rec, FILE* arq, int numcampos, int tamreg){
+/* Grava, na posição corrente em arq, os dados de rec.                        */
+
+   int i;
+   char *linha = Malloc(sizeof(char)*(tamreg+1));
+   
+   linha[0] = '\0';
+   
+   /* junta todos os campos do registros em um unico bloco de memoria
+      para dar apenas um fwrite */
+   
+   for(i = 0; i < numcampos; i++)
+         strcat(linha, rec[i]);
+   
+   strcat(linha, "\n");
+   
+   fwrite(linha, tamreg, 1, arq);
+   
+   free(linha);
+
+} /* ImprimeRegFixo */
+
+
+
+
+int particiona(int inicio, int fim, Record** rec, int key, Header* h, Record* registro) {
+/* Função auxiliar do quicksort */
+
+    int pivo,ultbaixo,temp,i;
+    int j;
+    int a,b;
+
+    pivo = inicio;
+
+    ultbaixo = inicio;
+    
+
+    for(i=inicio+1; i<=fim; i++) {
+            
+
+         j=0;
+                             
+         while((int)(toupper(rec[0][i][key][j]))==(int)(toupper(rec[0][pivo][key][j])))
+            j++;     
+            
+
+         if ((int)(toupper(rec[0][i][key][j]))<=(int)(toupper(rec[0][pivo][key][j]))) {
+            ultbaixo++;
+            *registro = rec[0][i];
+            rec[0][i] = rec[0][ultbaixo];
+            rec[0][ultbaixo] = *registro;
+         }
+    }
+    
+    
+    *registro = rec[0][inicio];
+    
+    rec[0][inicio] = rec[0][ultbaixo];
+    
+    rec[0][ultbaixo]= *registro;
+ 
+    return(ultbaixo);
+    
+} /* particiona */
+
+
+
+
+void quick(int inicio, int fim, Record** rec, int key, Header* h, Record* registro) {
+/* Ordena os registros pelo metodo quicksort */
+
+     int meio;
+     
+     if (inicio<fim) {
+        meio = particiona(inicio, fim, rec, key, h, registro);
+        quick(inicio, meio-1, rec, key, h, registro);
+        quick(meio+1, fim, rec, key, h, registro);
+     }
+     
+} /* quick */
+
+
+
+
+void OrdenaRegistros(Record** rec, int i, int key, Header* h, int n, Record* registro ){
+/* Ordena um vetor de registros com i elementos, usando o campo indicado por
+   key como chave de ordenação */
+   
+
+        quick(0, i-1, rec, key, h, registro);  
+        
+} /* OrdenaRegistros */
+
+
+
+
+RecSM CriaRecSMNulo(int n){
+/* Cria uma cabeça para uma lista de estruturas RecSM          */
+
+   int i;
+   RecSM res;
+   res = malloc(sizeof(Ordena));
+   res->reg = malloc(sizeof(char*)*n);
+
+   for(i=0; i<n; i++){
+            (res->reg)[i] = malloc(sizeof(char)*2);
+            strcpy((res->reg)[i], " ");
+   }
+
+   res->index = -1;
+   res->prox = res;
+   return res;
+
+} /* CriaRecSMNulo */
+
+
+
+void InsereSMAux(RecSM p, Record rec, int c) {
+/* Insere o termo '(rec,c)' após o nó apontado por 'p'.                  */
+   RecSM q = malloc(sizeof(Ordena));
+   q->reg = rec;
+   q->index = c;
+   q->prox = p->prox;
+   p->prox = q;
+} /* InsereSMAux */
+
+
+
+
+void InsereSM(RecSM lista, Record rec, int i, int key){
+/* Recebe um registro e o índice do arquivo de onde ele provêm e o insere em 
+   lista, em ordem crescente do campo de rec indicado por key  */
+
+   RecSM q = lista, antes;
+
+   do {
+               antes = q;
+               q = q->prox;
+      } while(q != lista && strcmp((q->reg)[key], rec[key]) < 1);
+
+   InsereSMAux(antes, rec, i);              //inserção na lista   
+
+} /* InsereSM */
+
+
+
+
+void RemoveSM(RecSM lista, RecSM noh, int n) {
+/* Remove noh da posição posterior a lista em uma lista de RecSM, liberando
+   a memória alocada para noh                                                 */     
+
+   int i;
+   lista->prox = noh->prox;
+   for(i=0; i<n; i++) free((noh->reg)[i]);
+   free(noh->reg);
+   free(noh);
+   
+} /* RemoveSM */
+
+
+/*******************************************************Funções auxiliares*****/
+
+
 
 void AbreArquivoFixo(char* nome, FILE** arqIn, FILE** arqCfg){
 /* Abre o arquivo de entrada e seu respectivo arquivo de configuração (.cfg) */   
@@ -94,6 +264,8 @@ void AbreArquivoFixo(char* nome, FILE** arqIn, FILE** arqCfg){
    *arqCfg = Fopen(strcat(nome, "cfg"), "r");
    
 } /* AbreArquivoFixo */
+  
+  
   
   
 void CarregaHeader(Header** h, int* numcampos, FILE* arqCfg){
@@ -139,6 +311,8 @@ void CarregaHeader(Header** h, int* numcampos, FILE* arqCfg){
     
 } /* CarregaHeader */
 
+
+
   
 int LeChaveOrdena(char* nomecampo, Header* head, int numcampos){
 /* Retorna o índice do campo chave de ordenação para uso em Record.
@@ -158,6 +332,8 @@ int LeChaveOrdena(char* nomecampo, Header* head, int numcampos){
 } /* LeChaveOrdena */
 
 
+
+
 int ValidaTamMem(char* arg, int tamreg){
 /* Verifica se arg representa um inteiro != 0 e retorna seu valor dividido
    por tam. Retorna -1 em caso de erro. */
@@ -167,14 +343,16 @@ int ValidaTamMem(char* arg, int tamreg){
    if(!VerificaDigitos(arg))
        return -1;
    
-   mem = atoi(arg);
+   mem = atoi(arg)/tamreg;
    
    if(mem == 0)
        return -1;
        
-   return mem/tamreg;
+   return mem;
 
 } /* ValidaTamMem */
+
+
 
 
 int NumRegs(FILE* arq, int tamreg){
@@ -191,6 +369,8 @@ int NumRegs(FILE* arq, int tamreg){
     return n;
     
 } /* NumRegs */
+
+
     
 
 FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int numcampos, int* n, int totalregs, int* nread, int* nwrite){
@@ -232,32 +412,30 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
         }
         
         
-     Record registro;
-     int k;
+        Record registro;
+        int k;
    
    
-     //criando um registro temporario para a ordenação
+        //criando um registro temporario para a ordenação
    
-    registro = malloc(sizeof(char*)*numcampos);
+        registro = malloc(sizeof(char*)*numcampos);
   
-   for(k=0;k<numcampos;k++){
+        for(k=0;k<numcampos;k++){
                     
-      if(k==0 || k==3 || k==4 || k==5){    //campos que tem um ' ' no final     
-          registro[k] = (char*)malloc(sizeof(char)*(h[k].tamanho+2));
-      }
-      else {           
-          registro[k] = (char*)malloc(sizeof(char)*(h[k].tamanho+1));
-      }
-   }  
+            if(k==0 || k==3 || k==4 || k==5){    //campos que tem um ' ' no final     
+                    registro[k] = (char*)malloc(sizeof(char)*(h[k].tamanho+2));
+            }
+            else {           
+                    registro[k] = (char*)malloc(sizeof(char)*(h[k].tamanho+1));
+            }
+        }  
    
-     if(regsArq>1){  //se tiver mais de um registro no arquivo, chama a funcao de ordenacao
+        if(regsArq>1){  //se tiver mais de um registro no arquivo, chama a funcao de ordenacao
         
-        OrdenaRegistros(&reg, regsArq, key, h, numcampos, &registro); 
+                        OrdenaRegistros(&reg, regsArq, key, h, numcampos, &registro); 
         
-     } 
+        } 
      
-     //LiberaRegistro(registro, numcampos); //libera o registro temporario   
-        
         itoa(j, nome, 10);
         
         strcat(nome, ".tmp");     //nome para o arquivo temporario
@@ -287,93 +465,79 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
 } /* CriaCorrida */
 
 
-void ImprimeRegFixo(Record rec, FILE* arq, int numcampos, int tamreg){
-/* Grava, na posição corrente em arq, os dados de rec.                        */
 
+
+FILE* SortMerge(FILE** ppFile, int inf, int sup, int max, Header* h, 
+                                            int key, int ncampos, int tamreg) {
+
+   //caso base da recursão   
+   if(inf == sup) return ppFile[inf];
+      
+   //variáveis da função   
    int i;
-   char *linha = Malloc(sizeof(char)*(tamreg+1));
-   
-   linha[0] = '\0';
-   
-   /* junta todos os campos do registros em um unico bloco de memoria
-      para dar apenas um fwrite */
-   
-   for(i = 0; i < numcampos; i++)
-         strcat(linha, rec[i]);
-   
-   strcat(linha, "\n");
-   
-   fwrite(linha, tamreg, 1, arq);
-   
+   char* linha = malloc(sizeof(char)*(tamreg+ncampos+2));
+   Record rec;
+   RecSM lista = CriaRecSMNulo(ncampos);
+   RecSM q;
+   int naoacabou = max;
+   FILE* arqOut;
+
+   //criação de uma lista ligada de RecSM, ordenada, com 'max' elementos
+   for(i=0; i<max; i++) {
+
+            fgets(linha, tamreg+ncampos, ppFile[inf+i]);       //leitura e criação de 
+            rec = LeRegistroFixo(linha, ncampos, h);           //registro
+            
+//ImprimeRegFixo(rec, stdout, ncampos, 65);            
+//printf("corr: %d\n\n", i+1);
+//system("pause");    
+
+            
+            InsereSM(lista, rec, i, key);
+   }
+
+/*sequencia de teste de InsereSM
+   RecSM q = lista->prox;
+   while(q != lista) {
+                        ImprimeRegistro(q->reg, h, ncampos);
+                        q = q->prox;
+   }
+*/
+
+
+
+
+   //arquivo que receberá os registros dos 'max' próximos arquivos da corrida
+   arqOut = fopen("tmpSM2.tmp", "wt");
+
+   while(naoacabou) {
+            q = lista->prox;                                          //1o registro da lista
+            i = q->index;
+
+//ImprimeRegistro(q->reg, h, ncampos);
+//system("pause");    
+
+            ImprimeRegFixo(q->reg, stdout, ncampos, 55);              //descarrega no temp - PARÂMETROS DE TESTE - MUDAR
+//system("pause");            
+            RemoveSM(lista, q, ncampos);                              //remove q da lista
+            fgets(linha, tamreg, ppFile[inf + i]);            //lê o proximo de onde 
+                                                                      //veio q->reg
+            if(!feof(ppFile[inf + i])) {
+                     rec = LeRegistroFixo(linha, ncampos, h);      
+            
+//ImprimeRegFixo(rec, stdout, ncampos, 65);            
+//printf("corr: %d\n\n", i+1);
+//system("pause");    
+                        
+                     InsereSM(lista, rec, i, key);                    //insere o novo reg na lista
+            }                                                          
+            else     naoacabou--;                                     //se acabou o arquivo
+   }
    free(linha);
-
-} /* ImprimeRegFixo */
-
-void quick(int inicio, int fim, Record** rec, int key, Header* h, Record* registro) {
-     /* Ordena os registros pelo metodo quicksort */
-
-     int meio;
-     
-     if (inicio<fim) {
-        meio = particiona(inicio, fim, rec, key, h, registro);
-        quick(inicio, meio-1, rec, key, h, registro);
-        quick(meio+1, fim, rec, key, h, registro);
-     }
-}
-
-int particiona(int inicio, int fim, Record** rec, int key, Header* h, Record* registro) {
-     /* Função auxiliar do quicksort */
-
-    int pivo,ultbaixo,temp,i;
-    int j;
-    int a,b;
-
-    pivo = inicio;
-
-    ultbaixo = inicio;
-    
-
-    for(i=inicio+1; i<=fim; i++) {
-            
-
-         j=0;
-                             
-         while((int)(toupper(rec[0][i][key][j]))==(int)(toupper(rec[0][pivo][key][j])))
-            j++;     
-            
-
-         if ((int)(toupper(rec[0][i][key][j]))<=(int)(toupper(rec[0][pivo][key][j]))) {
-            ultbaixo++;
-            *registro = rec[0][i];
-            rec[0][i] = rec[0][ultbaixo];
-            rec[0][ultbaixo] = *registro;
-         }
-    }
-    
-    
-    *registro = rec[0][inicio];
-    
-    rec[0][inicio] = rec[0][ultbaixo];
-    
-    rec[0][ultbaixo]= *registro;
- 
-    return(ultbaixo);
-}
-
-void OrdenaRegistros(Record** rec, int i, int key, Header* h, int n, Record* registro ){
-/* Ordena um vetor de registros com i elementos, usando o campo indicado por
-   key como chave de ordenação */
+//   LiberaSM(lista);
    
-
-        quick(0, i-1, rec, key, h, registro);  
-        
-}
-
-
-FILE* SortMerge(FILE** ppFile, int inf, int sup, int max, Header h, int key){
+                        
+   fclose(arqOut);
       
-      
+
 }
-
-
-
