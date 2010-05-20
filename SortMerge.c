@@ -14,6 +14,33 @@
 
 #include "SortMerge.h"
 
+/**FUNÇÕES USADAS NA DEPURAÇÃO - REMOVER PARA ENTREGA**************************/
+void ImprimeRegistro(Record registro, Header *head, int numcampos){
+/* Imprime todos os campos de um registro */
+   int i;
+   
+   for(i=0; i<numcampos-1; i++) {
+       fprintf(stdout, "%s: ", head[i].nome);
+       fprintf(stdout, "%s \n", registro[i]);
+   }
+   printf("\n");
+   
+} /* ImprimeRegistro */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**Funções auxiliares**********************************************************/
 
 void TiraBrancosDoFinal(char* s){
@@ -383,13 +410,13 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
    int i, j, regsArq = 0;
    Record *reg;
    FILE** ppFile;
+   Record registro;
+   int k;
    
    linha = malloc(sizeof(char)*tamreg);
-   
    reg = malloc(sizeof(Record*)*maxreg);
    
    *n = totalregs / maxreg;             //numero de corridas
-   
    if(totalregs % maxreg != 0)
        *n += 1;
        
@@ -399,61 +426,40 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
    for(j = 0; j < *n && !feof(arq); j++) {      //for para a criação das corridas
    
         for(i = 0; i < maxreg && !feof(arq); i++){      //for para criar o vetor de registros de cada corrida
-            
             fread(linha, tamreg, 1, arq);
             *nread += 1;
-            
             linha[tamreg-1] = '\0';
-            
             reg[i] = LeRegistroFixo(linha, numcampos, h);
-            
             regsArq++;
-            
         }
         
-        
-        Record registro;
-        int k;
-   
-   
         //criando um registro temporario para a ordenação
-   
         registro = malloc(sizeof(char*)*numcampos);
   
         for(k=0;k<numcampos;k++){
-                    
-            if(k==0 || k==3 || k==4 || k==5){    //campos que tem um ' ' no final     
+            if(k==0 || k==3 || k==4 || k==5)    //campos que tem um ' ' no final     
                     registro[k] = (char*)malloc(sizeof(char)*(h[k].tamanho+2));
-            }
-            else {           
+            else            
                     registro[k] = (char*)malloc(sizeof(char)*(h[k].tamanho+1));
-            }
         }  
    
-        if(regsArq>1){  //se tiver mais de um registro no arquivo, chama a funcao de ordenacao
-        
-                        OrdenaRegistros(&reg, regsArq, key, h, numcampos, &registro); 
-        
-        } 
+        if(regsArq>1)  //se tiver mais de um registro no arquivo, chama a funcao de ordenacao
+                        OrdenaRegistros(&reg, regsArq, key, h, numcampos, &registro);
      
         itoa(j, nome, 10);
-        
         strcat(nome, ".tmp");     //nome para o arquivo temporario
-        
         ppFile[j] = Fopen(nome, "w+");       //cria arquivo temporario
         
         for(i = 0; i < regsArq; i++) {      //imprime no arquivo e desaloca o registro
-            
             ImprimeRegFixo(reg[i], ppFile[j], numcampos, tamreg);
             *nwrite += 1;
-            
             LiberaRegistro(reg[i], numcampos);
         }
 
         regsArq = 0;
-        
    }
-   
+
+   LiberaRegistro(registro, numcampos);   
    free(linha);
    free(reg);
    
@@ -472,40 +478,22 @@ FILE* SortMerge(FILE** ppFile, int inf, int sup, int max, Header* h,
 
    //caso base da recursão   
    if(inf == sup) return ppFile[inf];
-      
+    
    //variáveis da função   
    int i;
-   char* linha = malloc(sizeof(char)*(tamreg+ncampos+2));
+   char* linha = malloc(sizeof(char)*tamreg);
    Record rec;
-   RecSM lista = CriaRecSMNulo(ncampos);
+   RecSM lista = CriaRecSMNulo(ncampos);                       //criação da estr. de ordenação
    RecSM q;
    int naoacabou = max;
    FILE* arqOut;
 
    //criação de uma lista ligada de RecSM, ordenada, com 'max' elementos
    for(i=0; i<max; i++) {
-
-            fgets(linha, tamreg+ncampos, ppFile[inf+i]);       //leitura e criação de 
+            fread(linha, tamreg, 1, ppFile[inf+i]);            //leitura e criação de 
             rec = LeRegistroFixo(linha, ncampos, h);           //registro
-            
-//ImprimeRegFixo(rec, stdout, ncampos, 65);            
-//printf("corr: %d\n\n", i+1);
-//system("pause");    
-
-            
-            InsereSM(lista, rec, i, key);
+            InsereSM(lista, rec, i, key);                      //inserção na estr. de ordenação
    }
-
-/*sequencia de teste de InsereSM
-   RecSM q = lista->prox;
-   while(q != lista) {
-                        ImprimeRegistro(q->reg, h, ncampos);
-                        q = q->prox;
-   }
-*/
-
-
-
 
    //arquivo que receberá os registros dos 'max' próximos arquivos da corrida
    arqOut = fopen("tmpSM2.tmp", "wt");
@@ -514,30 +502,20 @@ FILE* SortMerge(FILE** ppFile, int inf, int sup, int max, Header* h,
             q = lista->prox;                                          //1o registro da lista
             i = q->index;
 
-//ImprimeRegistro(q->reg, h, ncampos);
-//system("pause");    
-
-            ImprimeRegFixo(q->reg, stdout, ncampos, 55);              //descarrega no temp - PARÂMETROS DE TESTE - MUDAR
-//system("pause");            
+            ImprimeRegFixo(q->reg, arqOut, ncampos, tamreg);          //descarrega no temp
             RemoveSM(lista, q, ncampos);                              //remove q da lista
-            fgets(linha, tamreg, ppFile[inf + i]);            //lê o proximo de onde 
-                                                                      //veio q->reg
+            fread(linha, tamreg, 1, ppFile[inf+i]);                   //lê o proximo de onde veio q->reg
+
             if(!feof(ppFile[inf + i])) {
                      rec = LeRegistroFixo(linha, ncampos, h);      
-            
-//ImprimeRegFixo(rec, stdout, ncampos, 65);            
-//printf("corr: %d\n\n", i+1);
-//system("pause");    
-                        
                      InsereSM(lista, rec, i, key);                    //insere o novo reg na lista
             }                                                          
             else     naoacabou--;                                     //se acabou o arquivo
    }
    free(linha);
-//   LiberaSM(lista);
-   
-                        
-   fclose(arqOut);
-      
 
-}
+
+//   LiberaSM(lista);                        
+   return arqOut;
+      
+} /* SortMerge */
