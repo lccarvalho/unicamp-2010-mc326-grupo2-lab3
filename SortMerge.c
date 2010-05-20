@@ -79,22 +79,13 @@ Record LeRegistroFixo(char* linha, int n, Header* h) {
    int i;
    Record registro;
    
-   registro = malloc(sizeof(char*)*n);
+   registro = Malloc(sizeof(char*)*n);
    
    for(i=0;i<n;i++){
-                    
-      if(i==0 || i==3 || i==4 || i==5){    //campos que tem um ' ' no final
-      
-          registro[i] = (char*)malloc(sizeof(char)*(h[i].tamanho+2));
-          strncpy(registro[i], &linha[h[i].inicio-1], h[i].tamanho+1);
-          registro[i][h[i].tamanho + 1] = '\0';
-      }
-      else {
-           
-          registro[i] = (char*)malloc(sizeof(char)*(h[i].tamanho+1));
+                     
+          registro[i] = (char*)Malloc(sizeof(char)*(h[i].tamanho+1));
           strncpy(registro[i], &linha[h[i].inicio-1], h[i].tamanho);
           registro[i][h[i].tamanho] = '\0';
-      }
    }
    
    return registro;
@@ -117,7 +108,7 @@ void LiberaRegistro(Record registro, int n){
 
 
 
-void ImprimeRegFixo(Record rec, FILE* arq, int numcampos, int tamreg){
+void ImprimeRegFixo(Record rec, FILE* arq, int numcampos, int tamreg, Header* h){
 /* Grava, na posição corrente em arq, os dados de rec.                        */
 
    int i;
@@ -128,8 +119,14 @@ void ImprimeRegFixo(Record rec, FILE* arq, int numcampos, int tamreg){
    /* junta todos os campos do registros em um unico bloco de memoria
       para dar apenas um fwrite */
    
-   for(i = 0; i < numcampos; i++)
+   for(i = 0; i < numcampos; i++) {
+         
          strcat(linha, rec[i]);
+         
+         if((i < numcampos-1) && (h[i+1].inicio > h[i].inicio + h[i].tamanho)) //campos com um '' no final
+             strcat(linha, " ");
+         
+   }
    
    strcat(linha, "\n");
    
@@ -236,11 +233,13 @@ RecSM CriaRecSMNulo(int n){
 
 void InsereSMAux(RecSM p, Record rec, int c) {
 /* Insere o termo '(rec,c)' após o nó apontado por 'p'.                  */
+   
    RecSM q = malloc(sizeof(Ordena));
    q->reg = rec;
    q->index = c;
    q->prox = p->prox;
    p->prox = q;
+   
 } /* InsereSMAux */
 
 
@@ -313,7 +312,7 @@ void CarregaHeader(Header** h, int* numcampos, FILE* arqCfg){
     
     fscanf(arqCfg, "%d", numcampos);     /* Le número de campos */
     fseek(arqCfg, 2, SEEK_CUR);
-    *h = malloc(sizeof(Header)*(*numcampos));     /* Aloca o vetor head */
+    *h = Malloc(sizeof(Header)*(*numcampos));     /* Aloca o vetor head */
     
     for(i = 0; i < *numcampos; i++) {
         
@@ -357,14 +356,14 @@ int LeChaveOrdena(char* nomecampo, Header* head, int numcampos){
 
    int i;
    
-   if(strcmp(nomecampo, "RA") && strcmp(nomecampo, "NOME"))
+   if(strcmp(nomecampo, "RA") && strcmp(nomecampo, "NOME"))   //a chave deve ser RA ou NOME
        return -1;
    
    for(i = 0; i < numcampos; i++)
-       if(!strcmp(nomecampo, head[i].nome))
+       if(!strcmp(nomecampo, head[i].nome))  //chave encontrada
            return i;
            
-   return -1;
+   return -1;      //não achou a chave
    
 } /* LeChaveOrdena */
 
@@ -377,35 +376,18 @@ int ValidaTamMem(char* arg, int tamreg){
    
    int mem;
    
-   if(!VerificaDigitos(arg))
+   if(!VerificaDigitos(arg))    //verifica se é uma string numerica
        return -1;
    
    mem = atoi(arg)/tamreg;
    
-   if(mem == 0)
+   if(mem == 0)     //memoria menor que o tamanho de cada registro
        return -1;
     
    return mem;
 
 } /* ValidaTamMem */
 
-
-
-
-int NumRegs(FILE* arq, int tamreg){
-/*  Retorna o numero total de registros de tamanho 'tamreg' em 'arq' */
-    
-    int n;
-    
-    fseek(arq, 0, SEEK_END);
-    
-    n = (ftell(arq)/tamreg);
-     
-    rewind(arq); 
- 
-    return n;
-    
-} /* NumRegs */
 
 
     
@@ -423,17 +405,21 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
    Record registro;
    int k;
    
-   linha = malloc(sizeof(char)*tamreg);
-   reg = malloc(sizeof(Record*)*maxreg);
+   linha = Malloc(sizeof(char)*tamreg);
+   reg = Malloc(sizeof(Record*)*maxreg);
    *n = 0;
    *totalregs = 0;
       
-   ppFile = malloc(sizeof(FILE*));
+   ppFile = Malloc(sizeof(FILE*));
    
    while(!feof(arq)) {                                  //loop para a criação das corridas
    
         for(i = 0; i < maxreg && !feof(arq); i++){      //for para criar o vetor de registros de cada corrida
             fread(linha, tamreg, 1, arq);
+                 
+                 if(feof(arq))
+                     break;
+                     
             *nread += 1;
             (*totalregs)++;
             linha[tamreg-1] = '\0';
@@ -442,14 +428,11 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
         }
         
         //criando um registro temporario para a ordenação
-        registro = malloc(sizeof(char*)*numcampos);
+        registro = Malloc(sizeof(char*)*numcampos);
   
-        for(k=0;k<numcampos;k++){
-            if(k==0 || k==3 || k==4 || k==5)    //campos que tem um ' ' no final     
-                    registro[k] = (char*)malloc(sizeof(char)*(h[k].tamanho+2));
-            else            
-                    registro[k] = (char*)malloc(sizeof(char)*(h[k].tamanho+1));
-        }  
+        for(k=0;k<numcampos;k++)
+            registro[k] = (char*)Malloc(sizeof(char)*(h[k].tamanho+1));
+
    
         if(regsArq>1)  //se tiver mais de um registro no arquivo, chama a funcao de ordenacao
                         OrdenaRegistros(&reg, regsArq, key, h, numcampos, &registro);
@@ -460,7 +443,8 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
         ppFile[*n] = Fopen(nome, "w+");       //cria arquivo temporario
         
         for(i = 0; i < regsArq; i++) {      //imprime no arquivo e desaloca o registro
-            ImprimeRegFixo(reg[i], ppFile[*n], numcampos, tamreg);
+            
+            ImprimeRegFixo(reg[i], ppFile[*n], numcampos, tamreg, h);
             *nwrite += 1;
             LiberaRegistro(reg[i], numcampos);
         }
@@ -518,7 +502,7 @@ system("pause");
             q = lista->prox;                                          //1o registro da lista
             i = q->index;
 
-            ImprimeRegFixo(q->reg, arqOut, ncampos, tamreg);          //descarrega no temp
+            ImprimeRegFixo(q->reg, arqOut, ncampos, tamreg, h);          //descarrega no temp
             RemoveSM(lista, q, ncampos);                              //remove q da lista
             fread(linha, tamreg, 1, ppFile[i]);                   //lê o proximo de onde veio q->reg
 

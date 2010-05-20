@@ -70,9 +70,8 @@ int main(int argc, char* argv[]) {
        system("pause");
        exit (0);
     }
-    
 
-    printf("\n");                        //se não tiver isso não roda, não me pergunte porque...
+    printf("\n");
     
     /* vetor de arquivos temporários, já classificados */
     ppFile = CriaCorrida(arqIn, maxreg, tamreg, key, head, numcampos, &numcorridas, &totalregs, &nread, &nwrite);
