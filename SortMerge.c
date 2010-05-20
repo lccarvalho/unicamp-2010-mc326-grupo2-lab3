@@ -417,14 +417,10 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
    reg = malloc(sizeof(Record*)*maxreg);
    *n = 0;
    *totalregs = 0;
-//   *n = totalregs / maxreg;             //numero de corridas
-//   if(totalregs % maxreg != 0)
-//       *n += 1;
       
    ppFile = malloc(sizeof(FILE*));
    
-   while(!feof(arq)) {
-//   for(j = 0; j < *n && !feof(arq); j++) {      //for para a criação das corridas
+   while(!feof(arq)) {                                  //loop para a criação das corridas
    
         for(i = 0; i < maxreg && !feof(arq); i++){      //for para criar o vetor de registros de cada corrida
             fread(linha, tamreg, 1, arq);
@@ -458,19 +454,16 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
             *nwrite += 1;
             LiberaRegistro(reg[i], numcampos);
         }
-        (*n)++;
+
         regsArq = 0;
-printf("Criou a corrida %d\n", *n);        
+        fclose(ppFile[*n]);
+        (*n)++;
+      
    }
 
    LiberaRegistro(registro, numcampos);   
    free(linha);
    free(reg);
-   
-   for(i = 0; i < *n; i++)
-       rewind(ppFile[i]);
-printf("\n");                                 //Não me pergunte porque
-
 
    return ppFile;
    
