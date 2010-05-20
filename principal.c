@@ -90,9 +90,9 @@ int main(int argc, char* argv[]) {
     free(ppFile);    
     free(head);
     
-    printf("Arquivos temporarios criados: %d\n", numcorridas);
-    printf("Registros processados: %d\n", totalregs);
-    printf("Leitura efetuadas: %d\n", nread);
+    printf("Arquivos temporarios criados: %d\n", numcorridas-1);
+    printf("Registros processados: %d\n", totalregs-1);
+    printf("Leituras efetuadas: %d\n", nread);
     printf("Escritas efetuadas: %d\n", nwrite);
     
     return 0;

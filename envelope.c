@@ -20,7 +20,7 @@ FILE * Fopen(char *arg1, char *arg2){
      f = fopen(arg1, arg2);
      
      if(f == NULL) {
-          fprintf(stderr, "%s\n", "Erro arquivo\n");
+          fprintf(stderr, "Erro ao abrir arquivo %s\n", arg1);
           system("pause");
           exit (0);
      }
