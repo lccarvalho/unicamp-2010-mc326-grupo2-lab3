@@ -415,11 +415,8 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
    while(!feof(arq)) {                                  //loop para a criação das corridas
    
         for(i = 0; i < maxreg && !feof(arq); i++){      //for para criar o vetor de registros de cada corrida
+            
             fread(linha, tamreg, 1, arq);
-                 
-                 if(feof(arq))
-                     break;
-                     
             *nread += 1;
             (*totalregs)++;
             linha[tamreg-1] = '\0';
