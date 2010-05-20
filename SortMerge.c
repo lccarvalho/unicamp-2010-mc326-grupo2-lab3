@@ -276,6 +276,16 @@ void RemoveSM(RecSM lista, RecSM noh, int n) {
    
 } /* RemoveSM */
 
+void LiberaSM(RecSM noh, int n) {
+/* Remove noh da posição posterior a lista em uma lista de RecSM, liberando
+   a memória alocada para noh                                                 */     
+
+   int i;
+   for(i=0; i<n; i++) free((noh->reg)[i]);
+   free(noh->reg);
+   free(noh);
+   
+} /* RemoveSM */
 
 /*******************************************************Funções auxiliares*****/
 
@@ -472,27 +482,34 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
 
 
 
-FILE* SortMerge(FILE** ppFile, int inf, int sup, int max, Header* h, 
+FILE* SortMgAux(FILE** ppFile, int lote, Header* h, 
                                             int key, int ncampos, int tamreg) {
 
-   //caso base da recursão   
-   if(inf == sup) return ppFile[inf];
-    
    //variáveis da função   
    int i;
    char* linha = malloc(sizeof(char)*tamreg);
    Record rec;
    RecSM lista = CriaRecSMNulo(ncampos);                       //criação da estr. de ordenação
    RecSM q;
-   int naoacabou = max;
+   int naoacabou = lote;
    FILE* arqOut;
 
+
+
+
    //criação de uma lista ligada de RecSM, ordenada, com 'max' elementos
-   for(i=0; i<max; i++) {
-            fread(linha, tamreg, 1, ppFile[inf+i]);            //leitura e criação de 
+   for(i=0; i<lote; i++) {
+            fread(linha, tamreg, 1, ppFile[i]);            //leitura e criação de 
+printf("linha: %s\n", linha);            
             rec = LeRegistroFixo(linha, ncampos, h);           //registro
+ImprimeRegistro(rec, h, ncampos);            
             InsereSM(lista, rec, i, key);                      //inserção na estr. de ordenação
+q = lista->prox; 
+ImprimeRegistro(q->reg, h, ncampos);
+printf("Origem: %d\n", i);
+system("pause");            
    }
+
 
    //arquivo que receberá os registros dos 'max' próximos arquivos da corrida
    arqOut = fopen("tmpSM2.tmp", "wt");
@@ -503,18 +520,54 @@ FILE* SortMerge(FILE** ppFile, int inf, int sup, int max, Header* h,
 
             ImprimeRegFixo(q->reg, arqOut, ncampos, tamreg);          //descarrega no temp
             RemoveSM(lista, q, ncampos);                              //remove q da lista
-            fread(linha, tamreg, 1, ppFile[inf+i]);                   //lê o proximo de onde veio q->reg
+            fread(linha, tamreg, 1, ppFile[i]);                   //lê o proximo de onde veio q->reg
 
-            if(!feof(ppFile[inf + i])) {
+            if(!feof(ppFile[i])) {
                      rec = LeRegistroFixo(linha, ncampos, h);      
                      InsereSM(lista, rec, i, key);                    //insere o novo reg na lista
             }                                                          
             else     naoacabou--;                                     //se acabou o arquivo
+            
+printf("Nao acabou: %d\n", naoacabou);            
    }
+   for(i=0; i<lote; i++) 
+            fclose(ppFile[i]);
+   
    free(linha);
+   LiberaSM(lista, ncampos);                        
 
-
-//   LiberaSM(lista);                        
    return arqOut;
       
-} /* SortMerge */
+} /* SortMgAux */
+
+
+
+
+FILE* SortMerge(FILE** ppFile, int corridas, int max, Header* h, 
+                                            int key, int ncampos, int tamreg) {
+
+   int i, resta = corridas;
+   int batch;
+   FILE* arqOut;
+   
+   while(resta > 0) {
+               
+               batch = (max < resta)? max : resta;
+               
+               
+               arqOut = SortMgAux(ppFile, batch, h, key, ncampos, tamreg);
+               
+printf("Resta: %d   batch: %d\n", resta, batch);
+system("pause");
+               
+               resta -= batch;
+               for(i=0; i<batch; i++) {
+                        fclose(ppFile[i]);
+                        ppFile[i] = ppFile[i+batch];
+               }
+               resta++;
+               ppFile[resta] = arqOut;
+   }
+   return arqOut;
+   
+}
