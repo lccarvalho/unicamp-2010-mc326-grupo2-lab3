@@ -75,7 +75,7 @@ int ValidaTamMem(char* arg, int tamreg);
 int NumRegs(FILE* arq, int tamreg);
 /*  Retorna o numero total de registros de tamanho 'tamreg' em 'arq' */
 
-FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int numcampos, int* n, int totalregs, int* nread, int* nwrite);
+FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int numcampos, int* n, int* totalregs, int* nread, int* nwrite);
 /* Retorna um vetor de arquivos (corrida) cada um deles com max registros de arq,
    de tamanho tam, ordenados por key. Coloca em n o número de arquivos da 
    corrida */

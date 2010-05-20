@@ -374,7 +374,7 @@ int ValidaTamMem(char* arg, int tamreg){
    
    if(mem == 0)
        return -1;
-       
+    
    return mem;
 
 } /* ValidaTamMem */
@@ -390,9 +390,9 @@ int NumRegs(FILE* arq, int tamreg){
     fseek(arq, 0, SEEK_END);
     
     n = (ftell(arq)/tamreg);
-    
+     
     rewind(arq); 
-    
+ 
     return n;
     
 } /* NumRegs */
@@ -400,14 +400,14 @@ int NumRegs(FILE* arq, int tamreg){
 
     
 
-FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int numcampos, int* n, int totalregs, int* nread, int* nwrite){
+FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int numcampos, int* n, int* totalregs, int* nread, int* nwrite){
 /* Retorna um vetor de arquivos (corrida) cada um deles com max registros de arq,
    de tamanho tam, ordenados por key. Coloca em n o número de arquivos da 
    corrida */
    
    char *linha;
    char nome[10];
-   int i, j, regsArq = 0;
+   int i, regsArq = 0;
    Record *reg;
    FILE** ppFile;
    Record registro;
@@ -415,19 +415,21 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
    
    linha = malloc(sizeof(char)*tamreg);
    reg = malloc(sizeof(Record*)*maxreg);
+   *n = 0;
+   *totalregs = 0;
+//   *n = totalregs / maxreg;             //numero de corridas
+//   if(totalregs % maxreg != 0)
+//       *n += 1;
+      
+   ppFile = malloc(sizeof(FILE*));
    
-   *n = totalregs / maxreg;             //numero de corridas
-   if(totalregs % maxreg != 0)
-       *n += 1;
-       
-   ppFile = malloc(sizeof(FILE*)*(*n));
-   
-   
-   for(j = 0; j < *n && !feof(arq); j++) {      //for para a criação das corridas
+   while(!feof(arq)) {
+//   for(j = 0; j < *n && !feof(arq); j++) {      //for para a criação das corridas
    
         for(i = 0; i < maxreg && !feof(arq); i++){      //for para criar o vetor de registros de cada corrida
             fread(linha, tamreg, 1, arq);
             *nread += 1;
+            (*totalregs)++;
             linha[tamreg-1] = '\0';
             reg[i] = LeRegistroFixo(linha, numcampos, h);
             regsArq++;
@@ -446,25 +448,29 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
         if(regsArq>1)  //se tiver mais de um registro no arquivo, chama a funcao de ordenacao
                         OrdenaRegistros(&reg, regsArq, key, h, numcampos, &registro);
      
-        itoa(j, nome, 10);
-        strcat(nome, ".tmp");     //nome para o arquivo temporario
-        ppFile[j] = Fopen(nome, "w+");       //cria arquivo temporario
+        ppFile = (FILE**) realloc (ppFile, ((*n)+1) * sizeof(FILE*));
+        itoa(*n, nome, 10);
+        strcat(nome, ".tmp");                 //nome para o arquivo temporario
+        ppFile[*n] = Fopen(nome, "w+");       //cria arquivo temporario
         
         for(i = 0; i < regsArq; i++) {      //imprime no arquivo e desaloca o registro
-            ImprimeRegFixo(reg[i], ppFile[j], numcampos, tamreg);
+            ImprimeRegFixo(reg[i], ppFile[*n], numcampos, tamreg);
             *nwrite += 1;
             LiberaRegistro(reg[i], numcampos);
         }
-
+        (*n)++;
         regsArq = 0;
+printf("Criou a corrida %d\n", *n);        
    }
 
    LiberaRegistro(registro, numcampos);   
    free(linha);
    free(reg);
    
-   for(j = 0; j < *n; j++)
-       rewind(ppFile[j]);
+   for(i = 0; i < *n; i++)
+       rewind(ppFile[i]);
+printf("\n");                                 //Não me pergunte porque
+
 
    return ppFile;
    

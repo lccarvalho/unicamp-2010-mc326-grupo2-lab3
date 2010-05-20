@@ -71,12 +71,11 @@ int main(int argc, char* argv[]) {
        exit (0);
     }
     
-    totalregs = NumRegs(arqIn, tamreg);
 
     printf("\n");                        //se não tiver isso não roda, não me pergunte porque...
     
     /* vetor de arquivos temporários, já classificados */
-    ppFile = CriaCorrida(arqIn, maxreg, tamreg, key, head, numcampos, &numcorridas, totalregs, &nread, &nwrite);
+    ppFile = CriaCorrida(arqIn, maxreg, tamreg, key, head, numcampos, &numcorridas, &totalregs, &nread, &nwrite);
 
     fclose(arqIn);
     
@@ -90,8 +89,8 @@ int main(int argc, char* argv[]) {
     free(ppFile);    
     free(head);
     
-    printf("Arquivos temporarios criados: %d\n", numcorridas-1);
-    printf("Registros processados: %d\n", totalregs-1);
+    printf("Arquivos temporarios criados: %d\n", numcorridas);
+    printf("Registros processados: %d\n", totalregs);
     printf("Leituras efetuadas: %d\n", nread);
     printf("Escritas efetuadas: %d\n", nwrite);
     
