@@ -72,9 +72,6 @@ int ValidaTamMem(char* arg, int tamreg);
 /* Verifica se arg representa um inteiro != 0 e retorna seu valor dividido
    por tam. Retorna -1 em caso de erro. */
 
-int NumRegs(FILE* arq, int tamreg);
-/*  Retorna o numero total de registros de tamanho 'tamreg' em 'arq' */
-
 FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int numcampos, int* n, int* totalregs, int* nread, int* nwrite);
 /* Retorna um vetor de arquivos (corrida) cada um deles com max registros de arq,
    de tamanho tam, ordenados por key. Coloca em n o número de arquivos da 
