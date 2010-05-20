@@ -80,7 +80,7 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
    de tamanho tam, ordenados por key. Coloca em n o número de arquivos da 
    corrida */
 
-FILE* SortMerge(FILE** ppFile, int inf, int sup, int max, Header* h, 
+FILE* SortMerge(FILE** ppFile, int sup, int max, Header* h, 
                                             int key, int ncampos, int tamreg);
 /* Invoca CriaOrdNulo() para inicializar um vetor de estruturas de ordenação 
       (RecSM). Utiliza para isso os dados de h para alocar a memória necessária.

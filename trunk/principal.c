@@ -80,8 +80,8 @@ int main(int argc, char* argv[]) {
     fclose(arqIn);
     
     /* arquivo final, classificado */
-//    arqOut = SortMerge(ppFile, 0, numcorridas, maxreg, head, key, numcampos, tamreg);
-//    fclose(arqOut);
+    arqOut = SortMerge(ppFile, numcorridas, maxreg, head, key, numcampos, tamreg);
+    fclose(arqOut);
     
 //    for(j = 0; j < numcorridas; j++)
 //       fclose(ppFile[j]);
@@ -89,8 +89,8 @@ int main(int argc, char* argv[]) {
     free(ppFile);    
     free(head);
     
+    printf("Registros ordenados: %d\n", totalregs);
     printf("Arquivos temporarios criados: %d\n", numcorridas);
-    printf("Registros processados: %d\n", totalregs);
     printf("Leituras efetuadas: %d\n", nread);
     printf("Escritas efetuadas: %d\n", nwrite);
     
