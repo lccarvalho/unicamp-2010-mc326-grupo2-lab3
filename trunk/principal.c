@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
        system("pause");
        exit (0);
     }
-   
+ 
     /* arquivos de entrada e de configuração */
     AbreArquivoFixo(argv[1], &arqIn, &arqCfg);
   
@@ -72,20 +72,21 @@ int main(int argc, char* argv[]) {
     }
     
     totalregs = NumRegs(arqIn, tamreg);
-     
+
+    printf("\n");                        //se não tiver isso não roda, não me pergunte porque...
+    
     /* vetor de arquivos temporários, já classificados */
-   ppFile = CriaCorrida(arqIn, maxreg, tamreg, key, head, numcampos, &numcorridas, totalregs, &nread, &nwrite);
-  
+    ppFile = CriaCorrida(arqIn, maxreg, tamreg, key, head, numcampos, &numcorridas, totalregs, &nread, &nwrite);
+
     fclose(arqIn);
     
     /* arquivo final, classificado */
-    //arqOut = SortMerge(ppFile, 0, numcorridas, maxreg, head, key);     //LUIZ
-    
-    //fclose(arqOut);
+    arqOut = SortMerge(ppFile, 0, numcorridas, maxreg, head, key, numcampos, tamreg);
+    fclose(arqOut);
     
     for(j = 0; j < numcorridas; j++)
        fclose(ppFile[j]);
-       
+        
     free(ppFile);    
     free(head);
     
