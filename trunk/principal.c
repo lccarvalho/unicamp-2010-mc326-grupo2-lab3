@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
     int numcorridas, totalregs, nread = 0, nwrite = 0, nfases;
 
     if(argc != QTE_ARGUMENTOS) {
-       printf("Erro argumentos\n");      //TEMPORARIO
+       printf("Erro numero de argumentos\n");
        system("pause");
        exit (0);
     }
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
     key = LeChaveOrdena(argv[3], head, numcampos);
     
     if(key == -1) {
-       printf("Erro chave\n");         //TEMPORARIO
+       printf("Erro chave de ordenacao\n");
        system("pause");
        exit (0);
     }
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
     maxreg = ValidaTamMem(argv[4], tamreg);
    
     if(maxreg == -1) {
-       printf("Erro memoria\n");         //TEMPORARIO
+       printf("Erro memoria\n");
        system("pause");
        exit (0);
     }
