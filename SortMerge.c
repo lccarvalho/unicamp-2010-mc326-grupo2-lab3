@@ -399,7 +399,7 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
    
    char *linha;
    char nome[10];
-   int i, regsArq = 0;
+   int i, regsArq;
    Record *reg;
    FILE** ppFile;
    Record registro;
@@ -414,6 +414,7 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
    
    while(!feof(arq)) {                                  //loop para a criação das corridas
    
+        regsArq = 0;
         for(i = 0; i < maxreg && !feof(arq); i++){      //for para criar o vetor de registros de cada corrida
             
             fread(linha, tamreg, 1, arq);
@@ -431,8 +432,8 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
             registro[k] = (char*)Malloc(sizeof(char)*(h[k].tamanho+1));
 
    
-        if(regsArq>1)  //se tiver mais de um registro no arquivo, chama a funcao de ordenacao
-                        OrdenaRegistros(&reg, regsArq, key, h, numcampos, &registro);
+        if(regsArq>1)           //se tiver mais de um registro no arquivo, chama a funcao de ordenacao
+                OrdenaRegistros(&reg, regsArq, key, h, numcampos, &registro);
      
         ppFile = (FILE**) realloc (ppFile, ((*n)+1) * sizeof(FILE*));
         itoa(*n, nome, 10);
@@ -446,13 +447,14 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
             LiberaRegistro(reg[i], numcampos);
         }
 
-        regsArq = 0;
-        fclose(ppFile[*n]);
+        rewind(ppFile[*n]);
+
         (*n)++;
       
    }
 
-   LiberaRegistro(registro, numcampos);   
+//   LiberaRegistro(registro, numcampos);   
+
    free(linha);
    free(reg);
 
@@ -465,6 +467,8 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
 
 FILE* SortMgAux(FILE** ppFile, int lote, Header* h, 
                                             int key, int ncampos, int tamreg) {
+
+   if(lote == 1) return ppFile[0];
 
    //variáveis da função   
    int i;
@@ -481,14 +485,14 @@ FILE* SortMgAux(FILE** ppFile, int lote, Header* h,
    //criação de uma lista ligada de RecSM, ordenada, com 'max' elementos
    for(i=0; i<lote; i++) {
             fread(linha, tamreg, 1, ppFile[i]);            //leitura e criação de 
-printf("linha: %s\n", linha);            
+
             rec = LeRegistroFixo(linha, ncampos, h);           //registro
-ImprimeRegistro(rec, h, ncampos);            
+//ImprimeRegistro(rec, h, ncampos);            
             InsereSM(lista, rec, i, key);                      //inserção na estr. de ordenação
-q = lista->prox; 
-ImprimeRegistro(q->reg, h, ncampos);
-printf("Origem: %d\n", i);
-system("pause");            
+//q = lista->prox; 
+//ImprimeRegistro(q->reg, h, ncampos);
+//printf("Origem: %d\n", i);
+
    }
 
 
@@ -499,6 +503,7 @@ system("pause");
             q = lista->prox;                                          //1o registro da lista
             i = q->index;
 
+            ImprimeRegFixo(q->reg, stdout, ncampos, tamreg, h);          //descarrega no temp
             ImprimeRegFixo(q->reg, arqOut, ncampos, tamreg, h);          //descarrega no temp
             RemoveSM(lista, q, ncampos);                              //remove q da lista
             fread(linha, tamreg, 1, ppFile[i]);                   //lê o proximo de onde veio q->reg
@@ -509,14 +514,14 @@ system("pause");
             }                                                          
             else     naoacabou--;                                     //se acabou o arquivo
             
-printf("Nao acabou: %d\n", naoacabou);            
+//printf("Nao acabou: %d\n", naoacabou);            
    }
-   for(i=0; i<lote; i++) 
-            fclose(ppFile[i]);
+//   for(i=0; i<lote; i++) 
+//            fclose(ppFile[i]);
    
    free(linha);
    LiberaSM(lista, ncampos);                        
-
+   rewind(arqOut);   
    return arqOut;
       
 } /* SortMgAux */
@@ -537,17 +542,24 @@ FILE* SortMerge(FILE** ppFile, int corridas, int max, Header* h,
                
                
                arqOut = SortMgAux(ppFile, batch, h, key, ncampos, tamreg);
+                           
+
                
-printf("Resta: %d   batch: %d\n", resta, batch);
-system("pause");
-               
-               resta -= batch;
-               for(i=0; i<batch; i++) {
+
+               for(i=0; i<batch; i++) 
                         fclose(ppFile[i]);
+
+               resta -= batch;
+               for(i=0; i<resta; i++) 
                         ppFile[i] = ppFile[i+batch];
-               }
-               resta++;
+
                ppFile[resta] = arqOut;
+               resta++;
+
+
+printf("Resta: %d   batch: %d\n", resta, batch);
+system("pause");               
+               
    }
    return arqOut;
    
