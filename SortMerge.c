@@ -428,13 +428,6 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
             reg[i] = LeRegistroFixo(linha, numcampos, h);
             regsArq++;
         }
-        
-        //criando um registro temporario para a ordenação
-        registro = Malloc(sizeof(char*)*numcampos);
-  
-        for(k=0;k<numcampos;k++)
-            registro[k] = (char*)Malloc(sizeof(char)*(h[k].tamanho+1));
-
    
         if(regsArq>1)           //se tiver mais de um registro no arquivo, chama a funcao de ordenacao
                 OrdenaRegistros(&reg, regsArq, key, h, numcampos, &registro);
@@ -456,7 +449,6 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
       
    }
 
-   LiberaRegistro(registro, numcampos);
    free(linha);
    free(reg);
 
