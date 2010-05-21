@@ -77,39 +77,12 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
    de tamanho tam, ordenados por key. Coloca em n o número de arquivos da 
    corrida */
 
-FILE* SortMerge(FILE** ppFile, int sup, int max, Header* h, 
-                                            int key, int ncampos, int tamreg);
-/* Invoca CriaOrdNulo() para inicializar um vetor de estruturas de ordenação 
-      (RecSM). Utiliza para isso os dados de h para alocar a memória necessária.
-   Carrega este vetor com os registros de topo dos 'max' 1o.s arquivos
-      a partir de ppFile[inf], inserindo os elementos na ordem determinada
-      pela chave de ordenação
-   Cria um novo arquivo temporário e invoca CospePuxa() para inserir neste o 'menor'
-      dos registros do vetor de ordenação neste arquivo, puxar o próximo registro
-      do arquivo de onde ele veio, inseri-lo na estrutura de ordenação na posição
-      correta e cuspir o próximo para o arquivo temporário, até que os 'max' arquivos
-      tenham sido esgotados. Utiliza uma variável local (acabou), inicialmente 
-      igual a max, decrementando esta variável cada vez que encontrar um eof e parando
-      quando chegar a zero.
-   Acabando de tratar estes 'max' arquivos, a função apaga os 'max' arquivos 
-      tratados. Altera os índices de ppFile para que os arquivos ainda não tratados
-      ocupem as posições 'inf+1', 'inf+2', etc até o fim. Os índices que não 
-      estão mais em uso devem passar a apontar para NULL.
-   Se o novo 'sup' (índice do último arquivo válido de ppFile) for menor que o 
-      antigo 'inf' é porque esta corrida acabou. Se for este o caso, chama a si 
-      mesma com inf = 0. Senão chama com inf = 1 para acabar a corrida.
+FILE* SortMerge(FILE** ppFile, int* corridas, int max, Header* h, int key, 
+             int ncampos, int tamreg, int* nread, int* nwrite, int* nfases);
+/* Efetua Merge dos '*corridas' arquivos de 'ppFile', todos com 'ncampos' campos, 
+   registros de tamanho total tamreg e leiaute indicado em 'h'. Os registros são 
+   ordenados pela chave 'key'. O número máximo de registros simultaneamente em 
+   memória é indicado por 'max'. Atualiza em 'corridas', 'nwrite', 'nread' e
+   'nfases' o número de arquivos temporários criados, escritas e leituras de
+   registros e fases de merge realizadas.
 */
-
-
-
-
-
-
-
-
-
-
-
-
-
-

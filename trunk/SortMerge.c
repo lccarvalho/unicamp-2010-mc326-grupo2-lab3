@@ -453,8 +453,6 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
       
    }
 
-//   LiberaRegistro(registro, numcampos);   
-
    free(linha);
    free(reg);
 
@@ -465,8 +463,9 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
 
 
 
-FILE* SortMgAux(FILE** ppFile, int lote, Header* h, 
-                                            int key, int ncampos, int tamreg) {
+FILE* SortMgAux(FILE** ppFile, int lote, Header* h, int key, int ncampos, 
+                                 int tamreg, int* read, int* write, int fase) {
+/* Função auxiliar de SortMerge. Efetua uma fase de Merge                     */
 
    if(lote == 1) return ppFile[0];
 
@@ -474,50 +473,44 @@ FILE* SortMgAux(FILE** ppFile, int lote, Header* h,
    int i;
    char* linha = malloc(sizeof(char)*tamreg);
    Record rec;
-   RecSM lista = CriaRecSMNulo(ncampos);                       //criação da estr. de ordenação
+   RecSM lista = CriaRecSMNulo(ncampos);                          //criação da estr. de ordenação
    RecSM q;
    int naoacabou = lote;
    FILE* arqOut;
-
-
-
+   char nome[10];
 
    //criação de uma lista ligada de RecSM, ordenada, com 'max' elementos
    for(i=0; i<lote; i++) {
-            fread(linha, tamreg, 1, ppFile[i]);            //leitura e criação de 
-
-            rec = LeRegistroFixo(linha, ncampos, h);           //registro
-//ImprimeRegistro(rec, h, ncampos);            
-            InsereSM(lista, rec, i, key);                      //inserção na estr. de ordenação
-//q = lista->prox; 
-//ImprimeRegistro(q->reg, h, ncampos);
-//printf("Origem: %d\n", i);
+            fread(linha, tamreg, 1, ppFile[i]);                   //leitura e 
+            (*read)++;
+            rec = LeRegistroFixo(linha, ncampos, h);              //criação de registro
+            InsereSM(lista, rec, i, key);                         //inserção na estr. de ordenação
 
    }
 
-
-   //arquivo que receberá os registros dos 'max' próximos arquivos da corrida
-   arqOut = fopen("tmpSM2.tmp", "wt");
+   //arquivo que receberá o resultado do merge
+   itoa(fase, nome, 10);
+   strcat(nome, "m.tmp");                                         //nome para o arquivo temporario
+   arqOut = Fopen(nome, "w+");                                    
 
    while(naoacabou) {
-            q = lista->prox;                                          //1o registro da lista
+            q = lista->prox;                                      //1o registro da lista
             i = q->index;
 
-            ImprimeRegFixo(q->reg, stdout, ncampos, tamreg, h);          //descarrega no temp
-            ImprimeRegFixo(q->reg, arqOut, ncampos, tamreg, h);          //descarrega no temp
-            RemoveSM(lista, q, ncampos);                              //remove q da lista
-            fread(linha, tamreg, 1, ppFile[i]);                   //lê o proximo de onde veio q->reg
+            ImprimeRegFixo(q->reg, arqOut, ncampos, tamreg, h);   //descarrega no temp
+            (*write)++;
 
+            RemoveSM(lista, q, ncampos);                          //remove q da lista
+            fread(linha, tamreg, 1, ppFile[i]);                   //lê o proximo de onde veio q->reg
+            (*read)++;
+            
             if(!feof(ppFile[i])) {
                      rec = LeRegistroFixo(linha, ncampos, h);      
-                     InsereSM(lista, rec, i, key);                    //insere o novo reg na lista
+                     InsereSM(lista, rec, i, key);                //insere o novo reg na lista
             }                                                          
-            else     naoacabou--;                                     //se acabou o arquivo
-            
-//printf("Nao acabou: %d\n", naoacabou);            
+
+            else     naoacabou--;                                 //se acabou o arquivo
    }
-//   for(i=0; i<lote; i++) 
-//            fclose(ppFile[i]);
    
    free(linha);
    LiberaSM(lista, ncampos);                        
@@ -529,38 +522,43 @@ FILE* SortMgAux(FILE** ppFile, int lote, Header* h,
 
 
 
-FILE* SortMerge(FILE** ppFile, int corridas, int max, Header* h, 
-                                            int key, int ncampos, int tamreg) {
+FILE* SortMerge(FILE** ppFile, int* corridas, int max, Header* h, int key, 
+             int ncampos, int tamreg, int* nread, int* nwrite, int* nfases) {
+/* Efetua Merge dos '*corridas' arquivos de 'ppFile', todos com 'ncampos' campos, 
+   registros de tamanho total tamreg e leiaute indicado em 'h'. Os registros são 
+   ordenados pela chave 'key'. O número máximo de registros simultaneamente em 
+   memória é indicado por 'max'. Atualiza em 'corridas', 'nwrite', 'nread' e
+   'nfases' o número de arquivos temporários criados, escritas e leituras de
+   registros e fases de merge realizadas.
+*/
 
-   int i, resta = corridas;
+   int i, resta = *corridas;
    int batch;
    FILE* arqOut;
-   
-   while(resta > 0) {
-               
-               batch = (max < resta)? max : resta;
-               
-               
-               arqOut = SortMgAux(ppFile, batch, h, key, ncampos, tamreg);
-                           
+   (*nfases) = 0;
 
-               
+   while(resta > 1) {
+               batch = (max < resta)? max : resta;             //qte de arquivos que será 
+                                                               //enviada para sort
+               arqOut = SortMgAux(ppFile, batch, h, key, ncampos, tamreg, 
+                                                       nread, nwrite, *nfases);
+               (*corridas)++;
+               (*nfases)++;
+               resta -= batch;               
 
-               for(i=0; i<batch; i++) 
-                        fclose(ppFile[i]);
+               for(i=0; i<batch; i++)                          //fecha arquivos já
+                        fclose(ppFile[i]);                     //processados
 
-               resta -= batch;
-               for(i=0; i<resta; i++) 
+
+               for(i=0; i<resta; i++)                          //reindexa vetor
                         ppFile[i] = ppFile[i+batch];
 
-               ppFile[resta] = arqOut;
+               ppFile[resta] = arqOut;                         //insere resultado
+                                                               //no vetor
                resta++;
 
-
-printf("Resta: %d   batch: %d\n", resta, batch);
-system("pause");               
-               
    }
+   (*corridas)--;                            //um dos arquivos não é temporário
    return arqOut;
    
 }

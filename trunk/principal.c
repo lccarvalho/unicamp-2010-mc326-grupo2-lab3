@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
     FILE** ppFile;                               //vetor de arquivos temporários
     Header* head;
     int j, numcampos, maxmem, maxreg, tamreg, key;
-    int numcorridas, totalregs, nread = 0, nwrite = 0;
+    int numcorridas, totalregs, nread = 0, nwrite = 0, nfases;
 
     if(argc != QTE_ARGUMENTOS) {
        printf("Erro argumentos\n");      //TEMPORARIO
@@ -74,22 +74,24 @@ int main(int argc, char* argv[]) {
     printf("\n");
     
     /* vetor de arquivos temporários, já classificados */
-    ppFile = CriaCorrida(arqIn, maxreg, tamreg, key, head, numcampos, &numcorridas, &totalregs, &nread, &nwrite);
-printf("Cheguei\n");
+    ppFile = CriaCorrida(arqIn, maxreg, tamreg, key, head, numcampos, 
+                                     &numcorridas, &totalregs, &nread, &nwrite);
+                                     
     fclose(arqIn);
     
     /* arquivo final, classificado */
-    arqOut = SortMerge(ppFile, numcorridas, maxreg, head, key, numcampos, tamreg);
+    arqOut = SortMerge(ppFile, &numcorridas, maxreg, head, key, numcampos,
+                                              tamreg, &nread, &nwrite, &nfases);
+                                
     fclose(arqOut);
     
-//    for(j = 0; j < numcorridas; j++)
-//       fclose(ppFile[j]);
         
     free(ppFile);    
     free(head);
     
     printf("Registros ordenados: %d\n", totalregs);
     printf("Arquivos temporarios criados: %d\n", numcorridas);
+    printf("Fases de Merge realizadas: %d\n", nfases);
     printf("Leituras efetuadas: %d\n", nread);
     printf("Escritas efetuadas: %d\n", nwrite);
     
