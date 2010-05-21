@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "SortMerge.h"
 
 #define QTE_ARGUMENTOS 5
@@ -28,6 +29,8 @@
 int main(int argc, char* argv[]) {
     
     /* variáveis */
+    time_t inicio, fim;
+    double diferenca;
     FILE* arqIn;                                 //arquivo de entrada
     FILE* arqOut;                                //saída
     FILE* arqCfg;                                //arquivo que contem o header do banco de dados
@@ -35,6 +38,8 @@ int main(int argc, char* argv[]) {
     Header* head;
     int j, numcampos, maxmem, maxreg, tamreg, key;
     int numcorridas, totalregs, nread = 0, nwrite = 0, nfases;
+
+    time (&inicio);
 
     if(argc != QTE_ARGUMENTOS) {
        printf("Erro numero de argumentos\n");
@@ -82,13 +87,17 @@ int main(int argc, char* argv[]) {
     /* arquivo final, classificado */
     arqOut = SortMerge(ppFile, &numcorridas, maxreg, head, key, numcampos,
                                      tamreg, &nread, &nwrite, &nfases, argv[2]);
-                                
+                                                
     fclose(arqOut);
     
         
     free(ppFile);    
     free(head);
     
+    time (&fim);
+    diferenca = difftime (fim, inicio);
+    
+    printf("Tempo: %.0lf\n", diferenca );
     printf("Registros ordenados: %d\n", totalregs);
     printf("Arquivos temporarios criados: %d\n", numcorridas);
     printf("Fases de Merge realizadas: %d\n", nfases);
