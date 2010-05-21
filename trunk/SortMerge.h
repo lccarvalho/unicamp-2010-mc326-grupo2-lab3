@@ -78,11 +78,11 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
    corrida */
 
 FILE* SortMerge(FILE** ppFile, int* corridas, int max, Header* h, int key, 
-             int ncampos, int tamreg, int* nread, int* nwrite, int* nfases);
+   int ncampos, int tamreg, int* nread, int* nwrite, int* nfases, char* saida);
 /* Efetua Merge dos '*corridas' arquivos de 'ppFile', todos com 'ncampos' campos, 
    registros de tamanho total tamreg e leiaute indicado em 'h'. Os registros são 
    ordenados pela chave 'key'. O número máximo de registros simultaneamente em 
    memória é indicado por 'max'. Atualiza em 'corridas', 'nwrite', 'nread' e
    'nfases' o número de arquivos temporários criados, escritas e leituras de
-   registros e fases de merge realizadas.
+   registros e fases de merge realizadas. Grava o resultado com nome 'saida'.
 */

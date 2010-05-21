@@ -436,9 +436,10 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
                 OrdenaRegistros(&reg, regsArq, key, h, numcampos, &registro);
      
         ppFile = (FILE**) realloc (ppFile, ((*n)+1) * sizeof(FILE*));
-        itoa(*n, nome, 10);
-        strcat(nome, ".tmp");                 //nome para o arquivo temporario
-        ppFile[*n] = Fopen(nome, "w+");       //cria arquivo temporario
+//        itoa(*n, nome, 10);
+//        strcat(nome, ".tmp");                 //nome para o arquivo temporario
+//        ppFile[*n] = Fopen(nome, "w+");       //cria arquivo temporario
+        ppFile[*n] = tmpfile();  
         
         for(i = 0; i < regsArq; i++) {      //imprime no arquivo e desaloca o registro
             
@@ -464,7 +465,7 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
 
 
 FILE* SortMgAux(FILE** ppFile, int lote, Header* h, int key, int ncampos, 
-                                 int tamreg, int* read, int* write, int fase) {
+                  int tamreg, int* read, int* write, Boolean fim, char* saida) {
 /* Função auxiliar de SortMerge. Efetua uma fase de Merge                     */
 
    if(lote == 1) return ppFile[0];
@@ -489,9 +490,8 @@ FILE* SortMgAux(FILE** ppFile, int lote, Header* h, int key, int ncampos,
    }
 
    //arquivo que receberá o resultado do merge
-   itoa(fase, nome, 10);
-   strcat(nome, "m.tmp");                                         //nome para o arquivo temporario
-   arqOut = Fopen(nome, "w+");                                    
+   if(fim) arqOut = Fopen(saida, "wt");
+   else    arqOut = tmpfile();                                    
 
    while(naoacabou) {
             q = lista->prox;                                      //1o registro da lista
@@ -523,25 +523,28 @@ FILE* SortMgAux(FILE** ppFile, int lote, Header* h, int key, int ncampos,
 
 
 FILE* SortMerge(FILE** ppFile, int* corridas, int max, Header* h, int key, 
-             int ncampos, int tamreg, int* nread, int* nwrite, int* nfases) {
+   int ncampos, int tamreg, int* nread, int* nwrite, int* nfases, char* saida) {
 /* Efetua Merge dos '*corridas' arquivos de 'ppFile', todos com 'ncampos' campos, 
    registros de tamanho total tamreg e leiaute indicado em 'h'. Os registros são 
    ordenados pela chave 'key'. O número máximo de registros simultaneamente em 
    memória é indicado por 'max'. Atualiza em 'corridas', 'nwrite', 'nread' e
    'nfases' o número de arquivos temporários criados, escritas e leituras de
-   registros e fases de merge realizadas.
+   registros e fases de merge realizadas. Grava o resultado com nome 'saida'.
 */
 
    int i, resta = *corridas;
    int batch;
    FILE* arqOut;
    (*nfases) = 0;
+   Boolean fim = false;
 
    while(resta > 1) {
                batch = (max < resta)? max : resta;             //qte de arquivos que será 
                                                                //enviada para sort
+               if(batch == resta) fim = true;                                                               
+                                                               
                arqOut = SortMgAux(ppFile, batch, h, key, ncampos, tamreg, 
-                                                       nread, nwrite, *nfases);
+                                                   nread, nwrite, fim, saida);
                (*corridas)++;
                (*nfases)++;
                resta -= batch;               
