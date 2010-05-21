@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
     
     /* vetor de arquivos temporários, já classificados */
     ppFile = CriaCorrida(arqIn, maxreg, tamreg, key, head, numcampos, &numcorridas, &totalregs, &nread, &nwrite);
-
+printf("Cheguei\n");
     fclose(arqIn);
     
     /* arquivo final, classificado */
