@@ -20,7 +20,7 @@ FILE * Fopen(char *arg1, char *arg2){
      f = fopen(arg1, arg2);
      
      if(f == NULL) {
-          fprintf(stderr, "Erro ao abrir arquivo %s\n", arg1);
+          fprintf(stderr, "Erro ao abrir arquivo %s\n");
           system("pause");
           exit (0);
      }
@@ -39,7 +39,7 @@ void * Malloc(int tamanho){
      ptr = malloc(tamanho);
      
      if(ptr == NULL) {
-            //fprintf(stderr, "%s\n", MSG_ERRO_MEMORIA);
+            fprintf(stderr, "Falta de memória%s\n");
             system("pause");
             exit (0);
      }

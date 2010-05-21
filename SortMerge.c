@@ -275,6 +275,10 @@ void RemoveSM(RecSM lista, RecSM noh, int n) {
    
 } /* RemoveSM */
 
+
+
+
+
 void LiberaSM(RecSM noh, int n) {
 /* Remove noh da posição posterior a lista em uma lista de RecSM, liberando
    a memória alocada para noh                                                 */     
@@ -436,10 +440,8 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
                 OrdenaRegistros(&reg, regsArq, key, h, numcampos, &registro);
      
         ppFile = (FILE**) realloc (ppFile, ((*n)+1) * sizeof(FILE*));
-//        itoa(*n, nome, 10);
-//        strcat(nome, ".tmp");                 //nome para o arquivo temporario
-//        ppFile[*n] = Fopen(nome, "w+");       //cria arquivo temporario
-        ppFile[*n] = tmpfile();  
+
+        ppFile[*n] = tmpfile();      //cria arquivo temporário
         
         for(i = 0; i < regsArq; i++) {      //imprime no arquivo e desaloca o registro
             
@@ -454,6 +456,7 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
       
    }
 
+   LiberaRegistro(registro, numcampos);
    free(linha);
    free(reg);
 
@@ -564,4 +567,4 @@ FILE* SortMerge(FILE** ppFile, int* corridas, int max, Header* h, int key,
    (*corridas)--;                            //um dos arquivos não é temporário
    return arqOut;
    
-}
+} /* SortMerge */
