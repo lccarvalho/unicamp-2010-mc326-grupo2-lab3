@@ -434,7 +434,11 @@ FILE** CriaCorrida(FILE* arq, int maxreg, int tamreg, int key, Header* h, int nu
      
         ppFile = (FILE**) realloc (ppFile, ((*n)+1) * sizeof(FILE*));
 
-        ppFile[*n] = tmpfile();      //cria arquivo temporário
+        //ppFile[*n] = tmpfile();      //cria arquivo temporário
+        
+        itoa(*n, nome, 10);
+        strcat(nome, ".tmp");                 //nome para o arquivo temporario
+        ppFile[*n] = Fopen(nome, "w+"); 
         
         for(i = 0; i < regsArq; i++) {      //imprime no arquivo e desaloca o registro
             
