@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
     
     /* arquivo final, classificado */
     arqOut = SortMerge(ppFile, &numcorridas, maxreg, head, key, numcampos,
-                                              tamreg, &nread, &nwrite, &nfases);
+                                     tamreg, &nread, &nwrite, &nfases, argv[2]);
                                 
     fclose(arqOut);
     
